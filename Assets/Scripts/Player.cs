@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using System;
 
 public class Player : MonoBehaviour
 {
@@ -12,6 +9,8 @@ public class Player : MonoBehaviour
 
   public bool isJumping = false;
   public bool doubleJump = false;
+
+  private bool isBlowing;
   
 
   // Start is called before the first frame update
@@ -30,23 +29,27 @@ public class Player : MonoBehaviour
 
   void Move()
   {
-    Vector3 movement = new Vector3(Input.GetAxis("Horizontal"), 0f, 0f);
+    // Vector3 movement = new Vector3(Input.GetAxis("Horizontal"), 0f, 0f);
+    // transform.position += movement * Time.deltaTime * Speed;
 
-    transform.position += movement * Time.deltaTime * Speed;
+    float movement = Input.GetAxis("Horizontal");
+    rig.velocity = new Vector2(movement * Speed, rig.velocity.y);
 
-    if (Input.GetAxis("Horizontal") < 0f)
+    if (movement < 0f)
     {
       anim.SetBool("isRunning", true);
-      transform.eulerAngles = new Vector3(0f, 180f, 0f);
+      // transform.eulerAngles = new Vector3(0f, 180f, 0f);
+      rig.velocity = new Vector2(-Speed, rig.velocity.y);
     }
     
-    if (Input.GetAxis("Horizontal") > 0f)
+    if (movement > 0f)
     {
       anim.SetBool("isRunning", true);
-      transform.eulerAngles = new Vector3(0f, 0f, 0f);
+      // transform.eulerAngles = new Vector3(0f, 0f, 0f);
+      rig.velocity = new Vector2(Speed, rig.velocity.y);
     }
 
-    if (Input.GetAxis("Horizontal") == 0f)
+    if (movement == 0f)
     {
       anim.SetBool("isRunning", false);
     }
@@ -54,7 +57,7 @@ public class Player : MonoBehaviour
 
   void Jump()
   {
-    if (Input.GetKeyDown(KeyCode.Space))
+    if (Input.GetKeyDown(KeyCode.Space) && !isBlowing)
     {
       if (!isJumping)
       {
@@ -70,6 +73,24 @@ public class Player : MonoBehaviour
       }
     }
   }
+
+  void OnTriggerStay2D(Collider2D other)
+    {
+        if (other.gameObject.tag == "Fan")
+        {
+          isBlowing = true;
+          anim.SetBool("isBlowing", true);
+        }
+    }
+
+    void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.gameObject.tag == "Fan")
+        {
+          isBlowing = false;
+          anim.SetBool("isBlowing", false);
+        }
+    }
 
   void OnCollisionEnter2D(Collision2D collision)
   {
